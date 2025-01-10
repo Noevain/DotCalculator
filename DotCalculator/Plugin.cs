@@ -6,9 +6,9 @@ using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
+using DotCalculator.StatusNode;
 using DotCalculator.Windows;
 using Lumina.Excel.Sheets;
-
 namespace DotCalculator;
 
 public sealed class Plugin : IDalamudPlugin
@@ -18,28 +18,37 @@ public sealed class Plugin : IDalamudPlugin
 
     private const string CommandName = "/pmycommand";
 
-    public Configuration Configuration { get; init; }
+    public Configuration Config { get; init; }
 
     public readonly WindowSystem WindowSystem = new("DotCalculator");
-    private ConfigWindow ConfigWindow { get; init; }
+    internal ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
-
+    
+    public StatusNodeManager StatusNodeManager { get; private set; } = null!;
+    public static AddonNamePlateHooks Hooks { get; private set; } = null!;
+    
     internal bool InPvp;
+
+    internal ScreenLogHooks screenLogHooks { get; }
+    
     public Plugin()
     {
         Service.Initialize(PluginInterface);
-        
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        Config = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         ConfigWindow = new ConfigWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
         Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
             HelpMessage = "A useful message to display in /xlhelp"
         });
-
+        screenLogHooks = new ScreenLogHooks(this);
+        
+        StatusNodeManager = new StatusNodeManager(this);
+        
+        Hooks = new AddonNamePlateHooks(this);
         Service.ClientState.TerritoryChanged += OnTerritoryChange;
         
-
+        
         PluginInterface.UiBuilder.Draw += DrawUI;
 
         // This adds a button to the plugin installer entry of this plugin which allows
@@ -56,8 +65,8 @@ public sealed class Plugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged -= OnTerritoryChange;
         
         ConfigWindow.Dispose();
-        MainWindow.Dispose();
-
+        screenLogHooks.Dispose();
+        //MainWindow.Dispose();
         Service.CommandManager.RemoveHandler(CommandName);
     }
     

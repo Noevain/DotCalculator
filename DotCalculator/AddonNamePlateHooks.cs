@@ -1,4 +1,4 @@
-using Dalamud.Game.Addon.Lifecycle;
+﻿using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
@@ -6,7 +6,6 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using System;
 using System.Diagnostics;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace DotCalculator;
 
@@ -19,8 +18,10 @@ public unsafe class AddonNamePlateHooks : IDisposable
     public AddonNamePlateHooks(Plugin p)
     {
         _plugin = p;
+
         _lastUpdateTimer = new Stopwatch();
         _lastUpdateTimer.Start();
+
         Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, "NamePlate", PreDrawHandler);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "NamePlate", PreFinalizeHandler);
     }
@@ -33,7 +34,6 @@ public unsafe class AddonNamePlateHooks : IDisposable
 
     public void PreDrawHandler(AddonEvent type, AddonArgs args)
     {
-        
         if (!_plugin.Config.Enabled || _plugin.InPvp)
         {
             if (_lastUpdateTimer.IsRunning)
@@ -125,9 +125,18 @@ public unsafe class AddonNamePlateHooks : IDisposable
                 if (status.StatusId == 0) continue;
 
                 bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
-                if (!_plugin.StatusNodeManager.AddStatus(npIndex, kind, status, sourceIsLocalPlayer, nameplateIsLocalPlayer))
+                //Service.Log.Debug(status.SourceId.ToString());
+                if (!sourceIsLocalPlayer)
                 {
                     break;
+                }
+                //Service.Log.Debug(objectInfo->GameObject->GetGameObjectId().ObjectId.ToString());
+                if (_plugin.screenLogHooks.IDtoRunningDamage.ContainsKey(objectInfo->GameObject->GetGameObjectId().ObjectId))
+                {
+                    if (!_plugin.StatusNodeManager.AddStatus(npIndex, kind, status, sourceIsLocalPlayer, nameplateIsLocalPlayer))
+                    {
+                        break;
+                    }
                 }
             }
         }

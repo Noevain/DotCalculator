@@ -1,16 +1,21 @@
 using System;
+using System.Collections.Concurrent;
 using Dalamud.Game;
 using Dalamud.Game.Gui.FlyText;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace DotCalculator;
 
 public class ScreenLogHooks : IDisposable
 {
     private readonly Plugin _plugin;
-    
+    const int MaxStatusesPerGameObject = 30;
+    //gameobjectid to running DoT counter
+    public ConcurrentDictionary<uint, int> IDtoRunningDamage = new ConcurrentDictionary<uint, int>();
     private readonly unsafe delegate* unmanaged<long, long> getScreenLogManagerDelegate;
     private unsafe delegate void AddToScreenLogWithScreenLogKindDelegate(
         Character* target,
@@ -69,9 +74,33 @@ public class ScreenLogHooks : IDisposable
     {
         if (option == 0)
         {
-            //SeStringBuilder seStringBuilder = new();
-            //seStringBuilder.AddText("Total Dot Damage");
-            //totaldot = totaldot + val1;
+            //for DoT, target and source is always the same so need to check
+            //who actually owns the status
+            StatusManager* targetStatus = target->GetStatusManager();
+            var id  = target->GetGameObjectId().ObjectId;
+            var statusArray = targetStatus->Status;
+            ulong? localPlayerId = Service.ClientState.LocalPlayer?.GameObjectId;
+            for (int j = 0; j < MaxStatusesPerGameObject; j++)
+            {
+                Status status = statusArray[j];
+                if (status.StatusId == 0) continue;
+                bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
+                Service.Log.Debug(status.SourceId.ToString());
+                Service.Log.Debug(id.ToString());
+                if (sourceIsLocalPlayer)//return early since here we only care if at least 1 status is localPlayer
+                {
+                    if (IDtoRunningDamage.ContainsKey(id))
+                    {
+                        IDtoRunningDamage.TryUpdate(id, IDtoRunningDamage[id] + val1, IDtoRunningDamage[id]);
+                    }
+                    else
+                    {
+                        IDtoRunningDamage.TryAdd(id, val1);
+                    }
+                    break;
+                }
+            }
+
             Service.Log.Debug($"[Dot damage tick:{val1}]");
         }
         this.addToScreenLogWithScreenLogKindHook!.Original(target, source, flyTextKind, option, actionKind,
