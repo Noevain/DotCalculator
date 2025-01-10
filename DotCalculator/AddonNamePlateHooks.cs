@@ -131,9 +131,10 @@ public unsafe class AddonNamePlateHooks : IDisposable
                     break;
                 }
                 //Service.Log.Debug(objectInfo->GameObject->GetGameObjectId().ObjectId.ToString());
-                if (_plugin.screenLogHooks.IDtoRunningDamage.ContainsKey(objectInfo->GameObject->GetGameObjectId().ObjectId))
+                var StatusObjectId = objectInfo->GameObject->GetGameObjectId().ObjectId;
+                if (_plugin.screenLogHooks.IDtoRunningDamage.ContainsKey(StatusObjectId))
                 {
-                    if (!_plugin.StatusNodeManager.AddStatus(npIndex, kind, status, sourceIsLocalPlayer, nameplateIsLocalPlayer))
+                    if (!_plugin.StatusNodeManager.AddStatus(npIndex, kind, status, sourceIsLocalPlayer, nameplateIsLocalPlayer,StatusObjectId))
                     {
                         break;
                     }

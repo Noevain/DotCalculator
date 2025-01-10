@@ -38,16 +38,7 @@ public unsafe class StatusNode
             CurrentIconId = id;
         }
 
-        string timerString;
-        if (timer > 120)
-        {
-            timer /= 60;
-            timerString = timer + "m";
-        }
-        else
-        {
-            timerString = "" + timer;
-        }
+        var timerString = timer.ToString();
 
         if (timer != CurrentTimer)
         {

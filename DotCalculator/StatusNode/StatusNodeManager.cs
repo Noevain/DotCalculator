@@ -90,7 +90,7 @@ public unsafe class StatusNodeManager : IDisposable
     }
 
     // Return true if status was added or ignored, false if full.
-    public bool AddStatus(int groupIndex, NameplateKind kind, Status status, bool sourceIsLocalPlayer, bool nameplateIsLocalPlayer)
+    public bool AddStatus(int groupIndex, NameplateKind kind, Status status, bool sourceIsLocalPlayer, bool nameplateIsLocalPlayer,uint statusGameObject)
     {
         StatusNodeGroup? group = NodeGroups[groupIndex];
 
@@ -107,8 +107,9 @@ public unsafe class StatusNodeManager : IDisposable
         uint stackCount = Math.Clamp(status.StackCount, (byte)0, info.MaxStacks);
         if (stackCount > 0)
             iconId += stackCount - 1;
-
-        group.AddStatus(iconId, (int)status.RemainingTime);
+        int val=0;
+        _plugin.screenLogHooks.IDtoRunningDamage.TryGetValue(statusGameObject, out val);
+        group.AddStatus(iconId, val);
         return true;
     }
 
