@@ -1,7 +1,7 @@
 {
   "Author": "your name here",
-  "Name": "Sample Plugin",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
+  "Name": "Dot Calculator",
+  "Punchline": "Show how much damage your DoTs have dealt so far",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",
   "Tags": [
