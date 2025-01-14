@@ -96,7 +96,6 @@ public unsafe class AddonNamePlateHooks : IDisposable
         NameplateKind kind = (NameplateKind)objectInfo->NamePlateObjectKind;
         switch (kind)
         {
-            case NameplateKind.Player:
             case NameplateKind.Enemy:
                 _plugin.StatusNodeManager.ShowGroup(npIndex);
                 break;
@@ -128,7 +127,7 @@ public unsafe class AddonNamePlateHooks : IDisposable
                 //Service.Log.Debug(status.SourceId.ToString());
                 if (!sourceIsLocalPlayer)
                 {
-                    break;
+                    continue;
                 }
                 //Service.Log.Debug(objectInfo->GameObject->GetGameObjectId().ObjectId.ToString());
                 var StatusObjectId = objectInfo->GameObject->GetGameObjectId().ObjectId;
