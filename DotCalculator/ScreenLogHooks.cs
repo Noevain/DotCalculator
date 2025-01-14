@@ -14,8 +14,8 @@ public class ScreenLogHooks : IDisposable
 {
     private readonly Plugin _plugin;
     const int MaxStatusesPerGameObject = 30;
+    private SeStringBuilder _seStringBuilder = new SeStringBuilder();
     //gameobjectid to running DoT counter
-    public ConcurrentDictionary<uint, int> IDtoRunningDamage = new ConcurrentDictionary<uint, int>();
     private readonly unsafe delegate* unmanaged<long, long> getScreenLogManagerDelegate;
     private unsafe delegate void AddToScreenLogWithScreenLogKindDelegate(
         Character* target,
@@ -58,6 +58,7 @@ public class ScreenLogHooks : IDisposable
                    Service.GameInteropProvider.HookFromAddress<AddToScreenLogWithScreenLogKindDelegate>(
                        addToScreenLogWithScreenLogKindAddress, this.AddToScreenLogWithScreenLogKindDetour);
                this.addToScreenLogWithScreenLogKindHook.Enable();
+               _seStringBuilder.AddText("Dot Damage:");
            }
     }
     
@@ -72,39 +73,100 @@ public class ScreenLogHooks : IDisposable
         int val2,
         byte damageType)
     {
-        if (option == 0)
+        try
         {
-            //for DoT, target and source is always the same so need to check
-            //who actually owns the status
-            StatusManager* targetStatus = target->GetStatusManager();
-            var id  = target->GetGameObjectId().ObjectId;
-            var statusArray = targetStatus->Status;
-            ulong? localPlayerId = Service.ClientState.LocalPlayer?.GameObjectId;
-            for (int j = 0; j < MaxStatusesPerGameObject; j++)
+            Service.Log.Debug(option.ToString());
+            Service.Log.Debug(actionKind.ToString());
+            Service.Log.Debug(actionId.ToString());
+            Service.Log.Debug(val1.ToString());
+            Service.Log.Debug(val2.ToString());
+            Service.Log.Debug(flyTextKind.ToString());
+
+
+            if (option == 0)
             {
-                Status status = statusArray[j];
-                if (status.StatusId == 0) continue;
-                bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
-                Service.Log.Debug(status.SourceId.ToString());
-                Service.Log.Debug(id.ToString());
-                if (sourceIsLocalPlayer)//return early since here we only care if at least 1 status is localPlayer
+                //for DoT, target and source is always the same so need to check
+                //who actually owns the status
+                StatusManager* targetStatus = target->GetStatusManager();
+                var id = target->GetGameObjectId().ObjectId;
+                var statusArray = targetStatus->Status;
+                ulong? localPlayerId = Service.ClientState.LocalPlayer?.GameObjectId;
+                for (int j = 0; j < MaxStatusesPerGameObject; j++)
                 {
-                    if (IDtoRunningDamage.ContainsKey(id))
+                    Status status = statusArray[j];
+                    if (status.StatusId == 0) continue;
+                    bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
+                    //Service.Log.Debug(status.SourceId.ToString());
+                    //Service.Log.Debug(id.ToString());
+                    //Service.Log.Debug(status.RemainingTime.ToString());
+                    if (sourceIsLocalPlayer) //return early since here we only care if at least 1 status is localPlayer
                     {
-                        IDtoRunningDamage.TryUpdate(id, IDtoRunningDamage[id] + val1, IDtoRunningDamage[id]);
+                        _plugin.calculator.AddDamage(id, val1, status);
+
+                        if (_plugin.Config.FlyTextEnabled)
+                        {
+                            if (_plugin.calculator.IDtoRunningDamage.TryGetValue(id, out var runningDamage))
+                            {
+                                Service.FlyTextGui.AddFlyText(FlyTextKind.Damage, 1, (uint)_plugin.calculator.IDtoRunningDamage[id], 0,
+                                                              _seStringBuilder.Build(), SeString.Empty, 0, 0, 0);
+                            }
+                            else
+                            {
+                                Service.FlyTextGui.AddFlyText(FlyTextKind.Damage, 1, (uint)val1, 0,
+                                                              _seStringBuilder.Build(), SeString.Empty, 0, 0, 0);
+                            }
+                        }
+
+                        break;
                     }
-                    else
+                }
+                
+                //Service.Log.Debug($"[Dot damage tick:{val1}]");
+            }
+
+            else if (option == 5 && flyTextKind == FlyTextKind.DebuffFading)
+            {
+                Service.Log.Debug("Debuff fading");
+                var id = target->GetGameObjectId().ObjectId;
+                if (_plugin.calculator.IDtoRunningDamage.ContainsKey(id))
+                {
+                    Service.Log.Debug("Checking statuses");
+                    StatusManager* targetStatus = target->GetStatusManager();
+                    var statusArray = targetStatus->Status;
+                    bool shouldRemove = true;
+                    for (int j = 0; j < MaxStatusesPerGameObject; j++)
                     {
-                        IDtoRunningDamage.TryAdd(id, val1);
+                        Status status = statusArray[j];
+                        if (status.StatusId == 0) continue;
+                        ulong? localPlayerId = Service.ClientState.LocalPlayer?.GameObjectId;
+                        bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
+                        if (sourceIsLocalPlayer) //return early since here we only care if at least 1 status is localPlayer
+                        {
+                            Service.Log.Debug($"Time left:{status.RemainingTime}");
+                            if (status.RemainingTime == 0)
+                            {
+                                shouldRemove = true;
+                                break;
+                            }
+                        }
                     }
-                    break;
+                    Service.Log.Debug(shouldRemove.ToString());
+                    if (shouldRemove)
+                    {
+                        _plugin.calculator.RemoveRunningDamage(id);
+                    }
                 }
             }
 
-            Service.Log.Debug($"[Dot damage tick:{val1}]");
+            this.addToScreenLogWithScreenLogKindHook!.Original(target, source, flyTextKind, option, actionKind,
+                                                               actionId, val1, val2, damageType);
+        }catch (Exception ex)
+        {
+            Service.Log.Error(ex.ToString());
+            this.addToScreenLogWithScreenLogKindHook!.Original(target, source, flyTextKind, option, actionKind,
+                                                               actionId, val1, val2, damageType);
+            return;
         }
-        this.addToScreenLogWithScreenLogKindHook!.Original(target, source, flyTextKind, option, actionKind,
-                                                           actionId, val1, val2, damageType);
     }
 
     public void Dispose()

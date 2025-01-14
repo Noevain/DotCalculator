@@ -2,7 +2,7 @@
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel;
 using System;
-
+using Dalamud.Game.Gui.NamePlate;
 using Status = FFXIVClientStructs.FFXIV.Client.Game.Status;
 using StatusSheet = Lumina.Excel.Sheets.Status;
 
@@ -75,17 +75,8 @@ public unsafe class StatusNodeManager : IDisposable
 
     private bool ShouldIgnoreStatus(NameplateKind kind, StatusSheet info, bool sourceIsLocalPlayer, bool nameplateIsLocalPlayer)
     {
-        StatusCategory category = (StatusCategory)info.StatusCategory;
-        switch (kind)
-        {
-            case NameplateKind.Enemy:
-                if (_plugin.Config.ShowSelfDebuffsOnEnemies && sourceIsLocalPlayer) return false;
-                break;
-            case NameplateKind.Player:
-                if (_plugin.Config.ShowDebuffsOnSelf && nameplateIsLocalPlayer && category == StatusCategory.Detrimental) return false;
-                if (_plugin.Config.ShowDebuffsOnOthers && !nameplateIsLocalPlayer && category == StatusCategory.Detrimental) return false;
-                break;
-        }
+        if (kind == NameplateKind.Enemy && sourceIsLocalPlayer)
+            return false;
         return true;
     }
 
@@ -102,13 +93,9 @@ public unsafe class StatusNodeManager : IDisposable
         if (ShouldIgnoreStatus(kind, info, sourceIsLocalPlayer, nameplateIsLocalPlayer)) return true;
 
         uint iconId = info.Icon;
-        // Some statuses have fake stack counts and need to be clamped to safe values.
-        // For example, Bloodwhetting has StackCount 144 with MaxStacks 0.
-        uint stackCount = Math.Clamp(status.StackCount, (byte)0, info.MaxStacks);
-        if (stackCount > 0)
-            iconId += stackCount - 1;
+        
         int val=0;
-        _plugin.screenLogHooks.IDtoRunningDamage.TryGetValue(statusGameObject, out val);
+        _plugin.calculator.IDtoRunningDamage.TryGetValue(statusGameObject, out val);
         group.AddStatus(iconId, val);
         return true;
     }

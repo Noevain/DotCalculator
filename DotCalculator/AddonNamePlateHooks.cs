@@ -131,7 +131,7 @@ public unsafe class AddonNamePlateHooks : IDisposable
                 }
                 //Service.Log.Debug(objectInfo->GameObject->GetGameObjectId().ObjectId.ToString());
                 var StatusObjectId = objectInfo->GameObject->GetGameObjectId().ObjectId;
-                if (_plugin.screenLogHooks.IDtoRunningDamage.ContainsKey(StatusObjectId))
+                if (_plugin.calculator.IDtoRunningDamage.ContainsKey(StatusObjectId))
                 {
                     if (!_plugin.StatusNodeManager.AddStatus(npIndex, kind, status, sourceIsLocalPlayer, nameplateIsLocalPlayer,StatusObjectId))
                     {

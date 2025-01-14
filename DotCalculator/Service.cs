@@ -20,6 +20,8 @@ public class Service
     [PluginService] public static IDataManager DataManager { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
     [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+    [PluginService] public static IFlyTextGui FlyTextGui { get; private set; } = null!;
+    [PluginService] public static IObjectTable ObjectTable { get; private set; } = null!;
 
     public static void Initialize(IDalamudPluginInterface pluginInterface)
         => pluginInterface.Create<Service>();

@@ -37,6 +37,9 @@ public class Configuration : IPluginConfiguration
     public int DurationPadding;
     public Vector4 DurationTextColor;
     public Vector4 DurationEdgeColor;
+    
+    // FlyText
+    public bool FlyTextEnabled = true;
 
     public Configuration()
     {
@@ -54,7 +57,7 @@ public class Configuration : IPluginConfiguration
         UpdateIntervalMillis = 100;
 
         // NodeGroup
-        MaximumStatuses = 8;
+        MaximumStatuses = 1;
         GroupX = 27;
         GroupY = 30;
         NodeSpacing = 3;

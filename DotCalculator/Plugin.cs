@@ -27,6 +27,8 @@ public sealed class Plugin : IDalamudPlugin
     public StatusNodeManager StatusNodeManager { get; private set; } = null!;
     public static AddonNamePlateHooks Hooks { get; private set; } = null!;
     
+    public Calculator calculator { get; init; } = null!;
+    
     internal bool InPvp;
 
     internal ScreenLogHooks screenLogHooks { get; }
@@ -42,7 +44,7 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "A useful message to display in /xlhelp"
         });
         screenLogHooks = new ScreenLogHooks(this);
-        
+        calculator = new Calculator();
         StatusNodeManager = new StatusNodeManager(this);
         
         Hooks = new AddonNamePlateHooks(this);
