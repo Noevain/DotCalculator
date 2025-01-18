@@ -75,13 +75,13 @@ public class ScreenLogHooks : IDisposable
     {
         try
         {
-            Service.Log.Debug(option.ToString());
+            /*Service.Log.Debug(option.ToString());
             Service.Log.Debug(actionKind.ToString());
             Service.Log.Debug(actionId.ToString());
             Service.Log.Debug(val1.ToString());
             Service.Log.Debug(val2.ToString());
             Service.Log.Debug(flyTextKind.ToString());
-
+            */
 
             if (option == 0)
             {
@@ -133,7 +133,7 @@ public class ScreenLogHooks : IDisposable
                     Service.Log.Debug("Checking statuses");
                     StatusManager* targetStatus = target->GetStatusManager();
                     var statusArray = targetStatus->Status;
-                    bool shouldRemove = true;
+                    bool shouldRemove = false;
                     for (int j = 0; j < MaxStatusesPerGameObject; j++)
                     {
                         Status status = statusArray[j];
@@ -142,7 +142,6 @@ public class ScreenLogHooks : IDisposable
                         bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
                         if (sourceIsLocalPlayer) //return early since here we only care if at least 1 status is localPlayer
                         {
-                            Service.Log.Debug($"Time left:{status.RemainingTime}");
                             if (status.RemainingTime == 0)
                             {
                                 shouldRemove = true;
