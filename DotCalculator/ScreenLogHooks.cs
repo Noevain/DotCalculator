@@ -100,11 +100,9 @@ public class ScreenLogHooks : IDisposable
                         if (status.StatusId == 0) continue;
                         bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
                         Service.Log.Debug(isGroundDoT.ToString());
-                        if (sourceIsLocalPlayer &&
-                            !isGroundDoT) //return early since here we only care if at least 1 status is localPlayer
+                        if (sourceIsLocalPlayer)
                         {
                             _plugin.calculator.AddDamage(id, val1, status.StatusId);
-                            break;
                         }
                     }
                 }
