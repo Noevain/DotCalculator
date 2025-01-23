@@ -83,8 +83,8 @@ public class Calculator
             }
             var (ilvlSync, ilvlSyncType) = IlvlSync.GetCurrentIlvlSync();
             var (avgDamage,normalDamage,critDamage) = Equations.CalcExpectedOutput(UIState.Instance(),jobId,det,critdmg,critrate,dh,ten,speed,levelModifier,ilvlSync,ilvlSyncType,status_potency);
-            Service.Log.Debug($"Calculated Damage: {avgDamage},{normalDamage},{critDamage}");
-            Service.Log.Debug($"Damage tick: {damage}");
+            Service.Log.Verbose($"Calculated Damage: {avgDamage},{normalDamage},{critDamage}");
+            Service.Log.Verbose($"Damage tick: {damage}");
             return (int)avgDamage;
         }
     }

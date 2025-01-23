@@ -34,7 +34,6 @@ public class ScreenLogHooks : IDisposable
     public ScreenLogHooks(Plugin plugin)
     {
            _plugin = plugin;
-           nint getScreenLogManagerAddress;
            nint addToScreenLogWithScreenLogKindAddress;
            unsafe
            {
@@ -42,7 +41,6 @@ public class ScreenLogHooks : IDisposable
                {
 
                    // the BattleChara vf number (x8) is near the end of addToScreenLogWithScreenLogKind
-                   getScreenLogManagerAddress = Service.SigScanner.ScanText("48 8D 81 F0 22 00 00");
                    addToScreenLogWithScreenLogKindAddress =
                        Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BF ?? ?? ?? ?? EB 39");
 
@@ -52,10 +50,6 @@ public class ScreenLogHooks : IDisposable
                    Service.Log.Error(ex, "Sig scan failed.");
                    return;
                }
-
-
-               this.getScreenLogManagerDelegate = (delegate* unmanaged<long, long>)getScreenLogManagerAddress;
-
                this.addToScreenLogWithScreenLogKindHook =
                    Service.GameInteropProvider.HookFromAddress<AddToScreenLogWithScreenLogKindDelegate>(
                        addToScreenLogWithScreenLogKindAddress, this.AddToScreenLogWithScreenLogKindDetour);
@@ -76,14 +70,6 @@ public class ScreenLogHooks : IDisposable
     {
         try
         {
-            Service.Log.Debug(option.ToString());
-            Service.Log.Debug(actionKind.ToString());
-            Service.Log.Debug(actionId.ToString());
-            Service.Log.Debug(val1.ToString());
-            Service.Log.Debug(val2.ToString());
-            Service.Log.Debug(flyTextKind.ToString());
-            Service.Log.Debug(damageType.ToString());
-
             if (option == 0)//damageType 0 for normal dots,2 for ground dots
             {
                 //for DoT, target and source is always the same so need to check
@@ -99,7 +85,7 @@ public class ScreenLogHooks : IDisposable
                         Status status = statusArray[j];
                         if (status.StatusId == 0) continue;
                         bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
-                        Service.Log.Debug(isGroundDoT.ToString());
+                        Service.Log.Verbose(isGroundDoT.ToString());
                         if (sourceIsLocalPlayer)
                         {
                             _plugin.calculator.AddDamage(id, val1, status.StatusId);
@@ -118,16 +104,16 @@ public class ScreenLogHooks : IDisposable
                     }
                 }
                 
-                //Service.Log.Debug($"[Dot damage tick:{val1}]");
+                //Service.Log.Verbose($"[Dot damage tick:{val1}]");
             }
 
             else if (option == 5 && flyTextKind == FlyTextKind.DebuffFading)
             {
-                Service.Log.Debug("Debuff fading");
+                Service.Log.Verbose("Debuff fading");
                 var id = target->GetGameObjectId().ObjectId;
                 if (_plugin.calculator.IDtoRunningDamage.ContainsKey(id))
                 {
-                    Service.Log.Debug("Checking statuses");
+                    Service.Log.Verbose("Checking statuses");
                     StatusManager* targetStatus = target->GetStatusManager();
                     var statusArray = targetStatus->Status;
                     bool shouldRemove = false;
@@ -148,7 +134,6 @@ public class ScreenLogHooks : IDisposable
                             }
                         }
                     }
-                    Service.Log.Debug(shouldRemove.ToString());
                     if (shouldRemove)
                     {
                         _plugin.calculator.RemoveRunningDamage(id);
