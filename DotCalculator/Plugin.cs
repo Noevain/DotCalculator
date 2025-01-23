@@ -6,7 +6,6 @@ using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using DotCalculator.StatusNode;
 using DotCalculator.Windows;
 using Lumina.Excel.Sheets;
 namespace DotCalculator;
@@ -23,10 +22,6 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("DotCalculator");
     internal ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
-    
-    public StatusNodeManager StatusNodeManager { get; private set; } = null!;
-    public static AddonNamePlateHooks Hooks { get; private set; } = null!;
-    
     public Calculator calculator { get; init; } = null!;
     
     internal bool InPvp;
@@ -45,9 +40,6 @@ public sealed class Plugin : IDalamudPlugin
         });
         screenLogHooks = new ScreenLogHooks(this);
         calculator = new Calculator(this);
-        StatusNodeManager = new StatusNodeManager(this);
-        
-        Hooks = new AddonNamePlateHooks(this);
         Service.ClientState.TerritoryChanged += OnTerritoryChange;
         
         
