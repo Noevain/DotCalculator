@@ -48,8 +48,7 @@ public class Calculator
         }
     }
 
-
-    //https://www.akhmorning.com/allagan-studies/how-to-be-a-math-wizard/shadowbringers/damage-and-healing/#damage-over-time
+    
     public int CalculateDamage(int damage, uint statusId)
     {
         //we will split it into comps to make sure I am not missing anything
@@ -73,8 +72,17 @@ public class Calculator
                                                   levelModifier);
             var dh = Equations.CalcDh(uiState->PlayerState.Attributes[(int)Attributes.DirectHit],levelModifier);
             var ten = Equations.CalcTenacityDmg(uiState->PlayerState.Attributes[(int)Attributes.Tenacity],levelModifier);
+            double speed;
+            if (!jobId.IsCaster())
+            {
+                speed = Equations.CalcSpeed(uiState->PlayerState.Attributes[(int)Attributes.SkillSpeed],levelModifier);
+            }
+            else
+            {
+                speed = Equations.CalcSpeed(uiState->PlayerState.Attributes[(int)Attributes.SpellSpeed], levelModifier);
+            }
             var (ilvlSync, ilvlSyncType) = IlvlSync.GetCurrentIlvlSync();
-            var (avgDamage,normalDamage,critDamage) = Equations.CalcExpectedOutput(UIState.Instance(),jobId,det,critdmg,critrate,dh,ten,levelModifier,ilvlSync,ilvlSyncType,status_potency);
+            var (avgDamage,normalDamage,critDamage) = Equations.CalcExpectedOutput(UIState.Instance(),jobId,det,critdmg,critrate,dh,ten,speed,levelModifier,ilvlSync,ilvlSyncType,status_potency);
             Service.Log.Debug($"Calculated Damage: {avgDamage},{normalDamage},{critDamage}");
             Service.Log.Debug($"Damage tick: {damage}");
             return (int)avgDamage;
