@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using Dalamud.Game;
 using Dalamud.Game.Gui.FlyText;
 using Dalamud.Game.Text.SeStringHandling;
@@ -7,6 +8,8 @@ using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using Lumina.Excel.Sheets;
+using Status = FFXIVClientStructs.FFXIV.Client.Game.Status;
 
 namespace DotCalculator;
 
@@ -14,7 +17,6 @@ public class ScreenLogHooks : IDisposable
 {
     private readonly Plugin _plugin;
     const int MaxStatusesPerGameObject = 30;
-    private SeStringBuilder _seStringBuilder = new SeStringBuilder();
     //gameobjectid to running DoT counter
     private readonly unsafe delegate* unmanaged<long, long> getScreenLogManagerDelegate;
     private unsafe delegate void AddToScreenLogWithScreenLogKindDelegate(
@@ -58,7 +60,6 @@ public class ScreenLogHooks : IDisposable
                    Service.GameInteropProvider.HookFromAddress<AddToScreenLogWithScreenLogKindDelegate>(
                        addToScreenLogWithScreenLogKindAddress, this.AddToScreenLogWithScreenLogKindDetour);
                this.addToScreenLogWithScreenLogKindHook.Enable();
-               _seStringBuilder.AddText("Dot Damage:");
            }
     }
     
@@ -75,15 +76,15 @@ public class ScreenLogHooks : IDisposable
     {
         try
         {
-            /*Service.Log.Debug(option.ToString());
+            Service.Log.Debug(option.ToString());
             Service.Log.Debug(actionKind.ToString());
             Service.Log.Debug(actionId.ToString());
             Service.Log.Debug(val1.ToString());
             Service.Log.Debug(val2.ToString());
             Service.Log.Debug(flyTextKind.ToString());
-            */
+            Service.Log.Debug(damageType.ToString());
 
-            if (option == 0)
+            if (option == 0)//damageType 0 for normal dots,2 for ground dots
             {
                 //for DoT, target and source is always the same so need to check
                 //who actually owns the status
@@ -91,33 +92,31 @@ public class ScreenLogHooks : IDisposable
                 var id = target->GetGameObjectId().ObjectId;
                 var statusArray = targetStatus->Status;
                 ulong? localPlayerId = Service.ClientState.LocalPlayer?.GameObjectId;
-                for (int j = 0; j < MaxStatusesPerGameObject; j++)
-                {
-                    Status status = statusArray[j];
-                    if (status.StatusId == 0) continue;
-                    bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
-                    //Service.Log.Debug(status.SourceId.ToString());
-                    //Service.Log.Debug(id.ToString());
-                    //Service.Log.Debug(status.RemainingTime.ToString());
-                    if (sourceIsLocalPlayer) //return early since here we only care if at least 1 status is localPlayer
+                bool isGroundDoT = damageType == 2;
+                if (!isGroundDoT){
+                    for (int j = 0; j < MaxStatusesPerGameObject; j++)
                     {
-                        _plugin.calculator.AddDamage(id, val1, status);
-
-                        if (_plugin.Config.FlyTextEnabled)
+                        Status status = statusArray[j];
+                        if (status.StatusId == 0) continue;
+                        bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
+                        Service.Log.Debug(isGroundDoT.ToString());
+                        if (sourceIsLocalPlayer &&
+                            !isGroundDoT) //return early since here we only care if at least 1 status is localPlayer
                         {
-                            if (_plugin.calculator.IDtoRunningDamage.TryGetValue(id, out var runningDamage))
-                            {
-                                Service.FlyTextGui.AddFlyText(FlyTextKind.Damage, 1, (uint)_plugin.calculator.IDtoRunningDamage[id], 0,
-                                                              _seStringBuilder.Build(), SeString.Empty, 0, 0, 0);
-                            }
-                            else
-                            {
-                                Service.FlyTextGui.AddFlyText(FlyTextKind.Damage, 1, (uint)val1, 0,
-                                                              _seStringBuilder.Build(), SeString.Empty, 0, 0, 0);
-                            }
+                            _plugin.calculator.AddDamage(id, val1, status.StatusId);
+                            break;
                         }
-
-                        break;
+                    }
+                }
+                else
+                {
+                    //so... Salted earth has no status effect on target as far as I can tell
+                    //cringe
+                    var salted = Service.ClientState.LocalPlayer?.StatusList.ToList()
+                                        .FirstOrDefault(x => x.StatusId == 749);
+                    if (salted != null)
+                    {
+                        _plugin.calculator.AddDamage(id, val1, salted.StatusId);
                     }
                 }
                 
@@ -142,6 +141,8 @@ public class ScreenLogHooks : IDisposable
                         bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
                         if (sourceIsLocalPlayer) //return early since here we only care if at least 1 status is localPlayer
                         {
+                            //Status effect fading are still on the target with 0 duration
+                            //when this hook is ran
                             if (status.RemainingTime == 0)
                             {
                                 shouldRemove = true;

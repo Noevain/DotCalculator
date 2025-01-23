@@ -44,7 +44,7 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "A useful message to display in /xlhelp"
         });
         screenLogHooks = new ScreenLogHooks(this);
-        calculator = new Calculator();
+        calculator = new Calculator(this);
         StatusNodeManager = new StatusNodeManager(this);
         
         Hooks = new AddonNamePlateHooks(this);

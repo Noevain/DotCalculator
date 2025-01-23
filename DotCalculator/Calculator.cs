@@ -4,6 +4,8 @@ using Dalamud.Game.ClientState.Structs;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.STD.Helper;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Dalamud.Game.Gui.FlyText;
+using Dalamud.Game.Text.SeStringHandling;
 using Lumina.Excel.Sheets;
 using Status = FFXIVClientStructs.FFXIV.Client.Game.Status;
 
@@ -13,34 +15,48 @@ public class Calculator
 {
     //gameobjectid to running DoT counter
     public ConcurrentDictionary<uint, int> IDtoRunningDamage;
-    public Calculator()
+    private Plugin _plugin;
+    private SeStringBuilder _seStringBuilder = new SeStringBuilder();
+    public Calculator(Plugin plugin)
     {
+        _plugin = plugin;
         IDtoRunningDamage = new ConcurrentDictionary<uint, int>();
+        _seStringBuilder.AddText("Dot Damage:");
     }
 
-    public void AddDamage(uint id, int damage,Status status)
+    public void AddDamage(uint id, int damage,uint statusID)
     {
         if (IDtoRunningDamage.ContainsKey(id))
         {
-            var dmg = CalculateDamage(damage, status);
+            var dmg = CalculateDamage(damage, statusID);
             IDtoRunningDamage.TryUpdate(id, IDtoRunningDamage[id] + dmg, IDtoRunningDamage[id]);
         }
         else
         {
-            var dmg = CalculateDamage(damage, status);
+            var dmg = CalculateDamage(damage, statusID);
             IDtoRunningDamage.TryAdd(id, dmg);
+        }
+        
+        if (_plugin.Config.FlyTextEnabled)
+        {
+            if (_plugin.calculator.IDtoRunningDamage.TryGetValue(id, out var runningDamage))
+            {
+                Service.FlyTextGui.AddFlyText(FlyTextKind.Damage, 1,
+                                              (uint)_plugin.calculator.IDtoRunningDamage[id], 0,
+                                              _seStringBuilder.Build(), SeString.Empty, 0, 0, 0);
+            }
         }
     }
 
 
     //https://www.akhmorning.com/allagan-studies/how-to-be-a-math-wizard/shadowbringers/damage-and-healing/#damage-over-time
-    public int CalculateDamage(int damage, Status status)
+    public int CalculateDamage(int damage, uint statusId)
     {
         //we will split it into comps to make sure I am not missing anything
-        int status_potency = StatusToPotency(status.StatusId);
+        int status_potency = StatusToPotency(statusId);
         if (status_potency == -1)
         {
-            Service.Log.Warning($"Status ID not recognized for calculating damage:{status.StatusId}");
+            Service.Log.Warning($"Status ID not recognized for calculating damage:{statusId}");
             return 0;
         }
 
@@ -61,7 +77,7 @@ public class Calculator
             var (avgDamage,normalDamage,critDamage) = Equations.CalcExpectedOutput(UIState.Instance(),jobId,det,critdmg,critrate,dh,ten,levelModifier,ilvlSync,ilvlSyncType,status_potency);
             Service.Log.Debug($"Calculated Damage: {avgDamage},{normalDamage},{critDamage}");
             Service.Log.Debug($"Damage tick: {damage}");
-            return damage;
+            return (int)avgDamage;
         }
     }
 
@@ -71,12 +87,12 @@ public class Calculator
     //actually turns out the client doesn't know potencies and you'd have to text parse action description
     //to find out potencies.....
     //this definitely will not bite me in the ass later!
-    public int StatusToPotency(int id)
+    public int StatusToPotency(uint id)
     {
         switch (id)
         {
             //Melee DPS
-            //DRG
+            //Dragoon
             case 2719: return 45;//Chaotic Spring
             case 118: return 40;//Chaos Thrust
             //Ninja
