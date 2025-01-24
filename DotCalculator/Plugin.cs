@@ -42,25 +42,16 @@ public sealed class Plugin : IDalamudPlugin
         calculator = new Calculator(this);
         Service.ClientState.TerritoryChanged += OnTerritoryChange;
         
-        
         PluginInterface.UiBuilder.Draw += DrawUI;
-
-        // This adds a button to the plugin installer entry of this plugin which allows
-        // to toggle the display status of the configuration ui
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
-
-        // Adds another button that is doing the same but for the main ui of the plugin
-        PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
     }
 
     public void Dispose()
     {
         WindowSystem.RemoveAllWindows();
         Service.ClientState.TerritoryChanged -= OnTerritoryChange;
-        
         ConfigWindow.Dispose();
         screenLogHooks.Dispose();
-        //MainWindow.Dispose();
         Service.CommandManager.RemoveHandler(CommandName);
     }
     

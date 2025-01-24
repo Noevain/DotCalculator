@@ -12,7 +12,7 @@ public class ConfigWindow : Window, IDisposable
     // We give this window a constant ID using ###
     // This allows for labels being dynamic, like "{FPS Counter}fps###XYZ counter window",
     // and the window ID will always be "###XYZ counter window" for ImGui
-    public ConfigWindow(Plugin plugin) : base("A Wonderful Configuration Window###With a constant ID")
+    public ConfigWindow(Plugin plugin) : base("DoT calculator###SaltedEarther99")
     {
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
@@ -41,18 +41,17 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         // can't ref a property, so use a local copy
-        var configValue = Configuration.SomePropertyToBeSavedAndWithADefault;
-        if (ImGui.Checkbox("Random Config Bool", ref configValue))
+        var flyTextEnabled = Configuration.FlyTextEnabled;
+        if (ImGui.Checkbox("Display DoT damage as FlyText", ref flyTextEnabled))
         {
-            Configuration.SomePropertyToBeSavedAndWithADefault = configValue;
-            // can save immediately on change, if you don't want to provide a "Save and Close" button
+            Configuration.FlyTextEnabled = flyTextEnabled;
             Configuration.Save();
         }
 
-        var movable = Configuration.IsConfigWindowMovable;
-        if (ImGui.Checkbox("Movable Config Window", ref movable))
+        var printToChatEnabled = Configuration.PrintToChatEnabled;
+        if (ImGui.Checkbox("Print DoT damage in chat", ref printToChatEnabled))
         {
-            Configuration.IsConfigWindowMovable = movable;
+            Configuration.PrintToChatEnabled = printToChatEnabled;
             Configuration.Save();
         }
     }

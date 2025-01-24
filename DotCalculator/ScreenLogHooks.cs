@@ -69,6 +69,12 @@ public class ScreenLogHooks : IDisposable
     {
         try
         {
+            if (_plugin.InPvp)
+            {
+                this.addToScreenLogWithScreenLogKindHook!.Original(target, source, flyTextKind, option, actionKind,
+                                                                   actionId, val1, val2, damageType);
+                return;
+            }
             if (option == 0)//damageType 0 for normal dots,2 for ground dots
             {
                 //for DoT, target and source is always the same so need to check

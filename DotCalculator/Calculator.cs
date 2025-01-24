@@ -5,6 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.STD.Helper;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Dalamud.Game.Gui.FlyText;
+using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Lumina.Excel.Sheets;
 using Status = FFXIVClientStructs.FFXIV.Client.Game.Status;
@@ -16,12 +17,10 @@ public class Calculator
     //gameobjectid to running DoT counter
     public ConcurrentDictionary<uint, int> IDtoRunningDamage;
     private Plugin _plugin;
-    private SeStringBuilder _seStringBuilder = new SeStringBuilder();
     public Calculator(Plugin plugin)
     {
         _plugin = plugin;
         IDtoRunningDamage = new ConcurrentDictionary<uint, int>();
-        _seStringBuilder.AddText("Dot Damage:");
     }
 
     public void AddDamage(uint id, int damage,uint statusID)
@@ -41,9 +40,21 @@ public class Calculator
         {
             if (_plugin.calculator.IDtoRunningDamage.TryGetValue(id, out var runningDamage))
             {
+                SeString s = new SeString().Append("Dot Damage:");
                 Service.FlyTextGui.AddFlyText(FlyTextKind.Damage, 1,
                                               (uint)_plugin.calculator.IDtoRunningDamage[id], 0,
-                                              _seStringBuilder.Build(), SeString.Empty, 0, 0, 0);
+                                              s, SeString.Empty, 0, 0, 0);
+            }
+        }
+
+        if (_plugin.Config.PrintToChatEnabled)
+        {
+            if (_plugin.calculator.IDtoRunningDamage.TryGetValue(id, out var runningDamage))
+            {
+                XivChatEntry xx = new XivChatEntry();
+                xx.Type = XivChatType.Debug;
+                xx.Message = new SeString().Append("Dot Damage:"+_plugin.calculator.IDtoRunningDamage[id]);
+                Service.ChatGui.Print(xx);
             }
         }
     }
