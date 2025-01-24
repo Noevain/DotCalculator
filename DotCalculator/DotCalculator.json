@@ -3,6 +3,7 @@
   "Name": "Dot Calculator",
   "Punchline": "Show how much damage your DoTs have dealt so far",
   "Description": "Show as FlyText or chat prints how much damage the current DoT you have put on the target has dealt",
+    "IconUrl": "https://raw.githubusercontent.com/Noevain/DotCalculator/refs/heads/master/images/icon.png",
   "ApplicableVersion": "any",
   "Tags": [
     "DoT",
