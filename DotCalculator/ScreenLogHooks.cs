@@ -18,7 +18,6 @@ public class ScreenLogHooks : IDisposable
     private readonly Plugin _plugin;
     const int MaxStatusesPerGameObject = 30;
     //gameobjectid to running DoT counter
-    private readonly unsafe delegate* unmanaged<long, long> getScreenLogManagerDelegate;
     private unsafe delegate void AddToScreenLogWithScreenLogKindDelegate(
         Character* target,
         Character* source,

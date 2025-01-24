@@ -62,22 +62,9 @@ public class Equations {
             //damage calculation for DoTs,phys or magic matters, for our purposes we will assume every caster is magic and
             //every non caster is phys but that might not be always true in the future(or even now idk)
             double baseMultiplier;
-            if (!jobId.IsCaster())
-            {
-                //phys
-                baseMultiplier = Math.Floor(potency * atk * weaponDamage);
-            }
-            else
-            {
-                //magic
-                baseMultiplier = Math.Floor(potency * weaponDamage * speed);
-            }
+            baseMultiplier = Math.Floor(potency * atk * weaponDamage);
             var withDet = Math.Floor(baseMultiplier * (1 + det));
             var withTen = Math.Floor(withDet * (1 + ten));
-            if (!jobId.IsCaster())
-            {
-                withTen = Math.Floor(withTen * (1 + speed));//phys get spd applied here instead
-            }
             var normalDamage = Math.Floor(withTen * jobId.TraitModifiers(lvl));
             var avgDamage = Math.Floor(Math.Floor(normalDamage * (1 + (critMult - 1) * critRate)) * (1 + dh * 0.25));
             var critDamage = Math.Floor(normalDamage * critMult);
