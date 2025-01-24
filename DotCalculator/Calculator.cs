@@ -82,8 +82,8 @@ public class Calculator
                 speed = Equations.CalcSpeed(uiState->PlayerState.Attributes[(int)Attributes.SpellSpeed], levelModifier);
             }
             var (ilvlSync, ilvlSyncType) = IlvlSync.GetCurrentIlvlSync();
-            var (avgDamage,normalDamage,critDamage) = Equations.CalcExpectedOutput(UIState.Instance(),jobId,det,critdmg,critrate,dh,ten,speed,levelModifier,ilvlSync,ilvlSyncType,status_potency);
-            Service.Log.Verbose($"Calculated Damage: {avgDamage},{normalDamage},{critDamage}");
+            var avgDamage= Equations.CalcExpectedOutput(UIState.Instance(),jobId,det,critdmg,critrate,dh,ten,speed,levelModifier,ilvlSync,ilvlSyncType,status_potency);
+            Service.Log.Verbose($"Calculated Damage: {avgDamage}");
             Service.Log.Verbose($"Damage tick: {damage}");
             return (int)avgDamage;
         }

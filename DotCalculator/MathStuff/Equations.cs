@@ -43,7 +43,7 @@ public class Equations {
     
     
     
-    public static unsafe (double AvgDamage, double NormalDamage, double CritDamage) CalcExpectedOutput(UIState* uiState, JobId jobId, double det, double critMult, double critRate, double dh, double ten,double speed, in LevelModifier lvlModifier, uint? ilvlSync, IlvlSyncType ilvlSyncType,int potency) {
+    public static unsafe double CalcExpectedOutput(UIState* uiState, JobId jobId, double det, double critMult, double critRate, double dh, double ten,double speed, in LevelModifier lvlModifier, uint? ilvlSync, IlvlSyncType ilvlSyncType,int potency) {
         try {
             var lvl = uiState->PlayerState.CurrentLevel;
             var ap = uiState->PlayerState.Attributes[(int)(jobId.IsCaster() ? Attributes.AttackMagicPotency : Attributes.AttackPower)];
@@ -67,11 +67,10 @@ public class Equations {
             var withTen = Math.Floor(withDet * (1 + ten));
             var normalDamage = Math.Floor(withTen * jobId.TraitModifiers(lvl));
             var avgDamage = Math.Floor(Math.Floor(normalDamage * (1 + (critMult - 1) * critRate)) * (1 + dh * 0.25));
-            var critDamage = Math.Floor(normalDamage * critMult);
-            return (avgDamage, normalDamage, critDamage);
+            return avgDamage;
         } catch (Exception e) {
             Service.Log.Warning(e, "Failed to calculate raw damage");
-            return (0, 0, 0);
+            return 0;
         }
     }
 }
