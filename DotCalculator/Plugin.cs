@@ -15,13 +15,12 @@ public sealed class Plugin : IDalamudPlugin
     
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
 
-    private const string CommandName = "/pmycommand";
+    private const string CommandName = "/dotcalculator";
 
     public Configuration Config { get; init; }
 
     public readonly WindowSystem WindowSystem = new("DotCalculator");
     internal ConfigWindow ConfigWindow { get; init; }
-    private MainWindow MainWindow { get; init; }
     public Calculator calculator { get; init; } = null!;
     
     internal bool InPvp;
@@ -36,7 +35,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ConfigWindow);
         Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "A useful message to display in /xlhelp"
+            HelpMessage = "Display config options for DotCalculator"
         });
         screenLogHooks = new ScreenLogHooks(this);
         calculator = new Calculator(this);
@@ -71,11 +70,10 @@ public sealed class Plugin : IDalamudPlugin
     private void OnCommand(string command, string args)
     {
         // in response to the slash command, just toggle the display status of our main ui
-        ToggleMainUI();
+        ToggleConfigUI();
     }
 
     private void DrawUI() => WindowSystem.Draw();
 
     public void ToggleConfigUI() => ConfigWindow.Toggle();
-    public void ToggleMainUI() => MainWindow.Toggle();
 }
