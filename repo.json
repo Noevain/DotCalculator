@@ -17,8 +17,8 @@
     "LoadRequiredState": 0,
     "LoadSync": false,
     "AcceptsFeedback": false,
-    "DownloadLinkInstall": "https://github.com/Noevain/DotCalculator/releases/download/0.2.0/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/Noevain/DotCalculator/releases/download/0.2.0/latest.zip",
+    "DownloadLinkInstall": "https://github.com/Noevain/DotCalculator/releases/download/0.0.2/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Noevain/DotCalculator/releases/download/0.0.2/latest.zip",
     "IconUrl": "https://raw.githubusercontent.com/Noevain/DotCalculator/refs/heads/master/images/icon.png"
   }
 ]
