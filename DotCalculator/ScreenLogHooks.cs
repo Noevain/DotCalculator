@@ -93,7 +93,9 @@ public class ScreenLogHooks : IDisposable
                         Service.Log.Verbose(isGroundDoT.ToString());
                         if (sourceIsLocalPlayer)
                         {
-                            _plugin.calculator.AddDamage(id, val1, status.StatusId);
+                            //check if the status effect is dealing damage
+                            if(_plugin.calculator.StatusToPotency(status.StatusId) != -1)
+                                _plugin.calculator.AddDamage(id, val1, status.StatusId);
                         }
                     }
                 }
