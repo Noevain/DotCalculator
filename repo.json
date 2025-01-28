@@ -5,7 +5,7 @@
     "Punchline": "Calculate DoT damage",
     "Description": "I hate salted earth",
     "InternalName": "DotCalculator",
-    "AssemblyVersion": "0.2.0",
+    "AssemblyVersion": "0.0.3",
     "RepoUrl": "https://github.com/Noevain/DotCalculator",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 11,
@@ -17,8 +17,8 @@
     "LoadRequiredState": 0,
     "LoadSync": false,
     "AcceptsFeedback": false,
-    "DownloadLinkInstall": "https://github.com/Noevain/DotCalculator/releases/download/0.0.2/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/Noevain/DotCalculator/releases/download/0.0.2/latest.zip",
+    "DownloadLinkInstall": "https://github.com/Noevain/DotCalculator/releases/download/0.0.3/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Noevain/DotCalculator/releases/download/0.0.3/latest.zip",
     "IconUrl": "https://raw.githubusercontent.com/Noevain/DotCalculator/refs/heads/master/images/icon.png"
   }
 ]
