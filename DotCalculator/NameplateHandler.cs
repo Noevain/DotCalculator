@@ -1,6 +1,8 @@
 ﻿using System;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Gui.NamePlate;
+using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -75,7 +77,7 @@ public unsafe class NameplateHandler : IDisposable
                 pNewNode->AtkResNode.ParentNode = pNameplateResNode;
                 pLastChild->PrevSiblingNode = (AtkResNode*)pNewNode;
                 nameplateObject.Value.RootComponentNode->Component->UldManager.UpdateDrawNodeList();
-                pNewNode->AtkResNode.SetUseDepthBasedPriority( true );
+                pNewNode->AtkResNode.SetUseDepthBasedPriority( false );
                 //	Store it in our array.
                 mDotTextNodes[i] = pNewNode;
 
@@ -90,11 +92,56 @@ public unsafe class NameplateHandler : IDisposable
 
     private void UpdateDotNodes()
     {
+        if (_plugin.InPvp) return;
+        
+        
         for (int i = 0; i < mDotTextNodes.Length; ++i)
         {
             if (mDotTextNodes[i] != null)
             {
-                mDotTextNodes[i]->SetText($"F{1.0}");
+                var nameplate = GetNameplateObject(i);
+                
+                if (nameplate == null) continue;
+                var kind = nameplate.Value.NamePlateKind;
+                var asTxt = mDotTextNodes[i]->GetAsAtkTextNode();
+                if (kind != UIObjectKind.BattleNpcEnemy || nameplate.Value.IsLocalPlayer || nameplate.Value.IsPlayerCharacter)
+                {
+                    asTxt->ToggleVisibility(false);
+                    continue;
+                }
+                //unfortunately NameplateObject does not contain the object nameplated, so we have to look it up
+                //null check everything because everything here can dissapear, for instance when the entity dies
+                if (Framework.Instance() != null && 
+                    Framework.Instance()->GetUIModule()->GetUI3DModule() != null)
+                {
+                    var ui3Dmodule = Framework.Instance()->GetUIModule()->GetUI3DModule();
+                    for (int j = 0; j < ui3Dmodule->NamePlateObjectInfoCount; j++)
+                    {
+                        var pObjectInfo = ui3Dmodule->NamePlateObjectInfoPointers[j].Value;
+                        if (pObjectInfo != null &&
+                            pObjectInfo->GameObject != null &&
+                            pObjectInfo->NamePlateIndex < mDotTextNodes.Length)
+                        {
+                            var objId = pObjectInfo->GameObject->EntityId;
+                            if (_plugin.calculator.IDtoRunningDamage.TryGetValue(objId, out int damage))
+                            {
+                                asTxt->SetText(damage.ToString());
+                                asTxt->TextColor.A = 255;
+                                asTxt->TextColor.R = 255;
+                                asTxt->TextColor.G = 255;
+                                asTxt->TextColor.B = 255;
+                                asTxt->ToggleVisibility(true);
+                            }
+                            else
+                            {
+                                asTxt->ToggleVisibility(false);
+                            }
+                            
+                        }
+
+                    }
+                }
+                
             }
         }
 
