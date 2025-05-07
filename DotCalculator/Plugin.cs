@@ -4,9 +4,14 @@ using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
+using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Gui.NamePlate;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using DotCalculator.Windows;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using Lumina.Excel.Sheets;
 namespace DotCalculator;
 
@@ -23,6 +28,7 @@ public sealed class Plugin : IDalamudPlugin
     internal ConfigWindow ConfigWindow { get; init; }
     public Calculator calculator { get; init; } = null!;
     
+    public NameplateHandler nameplateHandler { get; init; } = null!;
     internal bool InPvp;
 
     internal ScreenLogHooks screenLogHooks { get; }
@@ -39,11 +45,16 @@ public sealed class Plugin : IDalamudPlugin
         });
         screenLogHooks = new ScreenLogHooks(this);
         calculator = new Calculator(this);
+        nameplateHandler = new NameplateHandler(this);
         Service.ClientState.TerritoryChanged += OnTerritoryChange;
         
         PluginInterface.UiBuilder.Draw += DrawUI;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
+        
+        
     }
+
+
 
     public void Dispose()
     {
@@ -51,6 +62,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged -= OnTerritoryChange;
         ConfigWindow.Dispose();
         screenLogHooks.Dispose();
+        nameplateHandler.Dispose();
         Service.CommandManager.RemoveHandler(CommandName);
     }
     

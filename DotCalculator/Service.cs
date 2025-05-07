@@ -23,6 +23,8 @@ public class Service
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
     [PluginService] public static IFlyTextGui FlyTextGui { get; private set; } = null!;
     [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
+    [PluginService] public static IGameGui GameGui { get; private set; } = null!;
+    [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
 
     public static void Initialize(IDalamudPluginInterface pluginInterface)
         => pluginInterface.Create<Service>();
