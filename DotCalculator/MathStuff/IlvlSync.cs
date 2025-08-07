@@ -25,7 +25,7 @@ public static class IlvlSync {
                 }
 
                 // duty is synced
-                if (((*(byte*)(icd + 7646) & 0x40) == 0 || (UIState.Instance()->PlayerState.IsLevelSynced & 1) != 0) && *(ushort*)(icd + 1322) > 0) {
+                if (((*(byte*)(icd + 7646) & 0x40) == 0 || (UIState.Instance()->PlayerState.IsLevelSynced) && *(ushort*)(icd + 1322) > 0)) {
                     return (*(ushort*)(icd + 1322), IlvlSyncType.Strict);
                 }
             }
@@ -40,7 +40,7 @@ public static class IlvlSync {
             }
         }
 
-        if (UIState.Instance()->PlayerState.IsLevelSynced == 1) {
+        if (UIState.Instance()->PlayerState.IsLevelSynced) {
             var syncedLevel = UIState.Instance()->PlayerState.CurrentLevel;
             var ilvl = (uint)(syncedLevel switch {
                 100 => 790,

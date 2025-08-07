@@ -19,17 +19,18 @@ public unsafe class NameplateHandler : IDisposable
     public NameplateHandler(Plugin plugin)
     {
         _plugin = plugin;
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "NamePlate",PreDrawHandler);
+        //Service.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "NamePlate",PreDrawHandler);
     }
     public void Dispose()
     {
-        DestroyDotNodes();
-        Service.AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "NamePlate",PreDrawHandler);
+        //DestroyDotNodes();
+        //Service.AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "NamePlate",PreDrawHandler);
     }
 
     public unsafe void PreDrawHandler(AddonEvent type, AddonArgs args)
     {
-        var pNameplateAddon = (AddonNamePlate*)args.Addon;
+        //CS 7.3 breaking changes,will fix later
+       /* var pNameplateAddon = (AddonNamePlate*)args.Addon;
 
         try
         {
@@ -49,7 +50,7 @@ public unsafe class NameplateHandler : IDisposable
         }
         catch (Exception e) {Service.Log.Error(e.ToString()); }
         
-        
+        */
 
     }
 
@@ -149,9 +150,10 @@ public unsafe class NameplateHandler : IDisposable
 
     private void DestroyDotNodes()
     {
+    //Disabled because of CS breaking changes, will fix later
         //	If the addon has moved since disabling the hook, it's impossible to know whether our
         //	node pointers are valid anymore, so we have to just let them leak in that case.
-        var pCurrentNameplateAddon = (AddonNamePlate*)Service.GameGui.GetAddonByName("NamePlate", 1);
+        /*var pCurrentNameplateAddon = (AddonNamePlate*)Service.GameGui.GetAddonByName("NamePlate", 1);
         if (currNameplateAddon == null || pCurrentNameplateAddon != currNameplateAddon)
         {
             Service.Log.Warning($"Unable to cleanup nameplate nodes due to addon address mismatch during unload");
@@ -182,6 +184,7 @@ public unsafe class NameplateHandler : IDisposable
             }
 
         }
+        */
 
     }
 

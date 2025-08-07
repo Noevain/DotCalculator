@@ -89,7 +89,7 @@ public class ScreenLogHooks : IDisposable
                     {
                         Status status = statusArray[j];
                         if (status.StatusId == 0) continue;
-                        bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
+                        bool sourceIsLocalPlayer = status.SourceObject.ObjectId== localPlayerId;
                         Service.Log.Verbose(isGroundDoT.ToString());
                         if (sourceIsLocalPlayer)
                         {
@@ -129,7 +129,7 @@ public class ScreenLogHooks : IDisposable
                         Status status = statusArray[j];
                         if (status.StatusId == 0) continue;
                         ulong? localPlayerId = Service.ClientState.LocalPlayer?.GameObjectId;
-                        bool sourceIsLocalPlayer = status.SourceId == localPlayerId;
+                        bool sourceIsLocalPlayer = status.SourceObject.ObjectId == localPlayerId;
                         if (sourceIsLocalPlayer) //return early since here we only care if at least 1 status is localPlayer
                         {
                             //Status effect fading are still on the target with 0 duration
